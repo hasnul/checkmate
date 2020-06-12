@@ -7,7 +7,7 @@ import chess
 import chess.engine
 import asyncio
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 MAX_PLIES = 160
 MAX_TIME = 0.1 #seconds
 BYTES_PER_LINE = 1024 #useless, depends on speed, egtb, threads, etc.
@@ -121,6 +121,9 @@ if __name__ == "__main__":
     print(f'Estimated worst-case run time = {runtime:.1f} minutes')
     #diskspace = MAX_PLIES*len(paths)*args.numiter*BYTES_PER_LINE/(1024*1024)
     #print(f'Estimated worst-case disk space = {diskspace:.2f} MB')
+    print(f'Found {len(paths)} potential chess engines:')
+    for p in paths:
+        print(p)
 
     if args.askuser:
         answer = input('Continue? (Y/n) ').lower()
