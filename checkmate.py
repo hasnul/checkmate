@@ -5,6 +5,7 @@ import os
 import logging
 import chess
 import chess.engine
+import asyncio
 
 __version__ = "0.0.3"
 MAX_PLIES = 160
@@ -53,8 +54,21 @@ def get_enginepaths(targets, include_subdir):
                     engine_paths.update(sub_exes)
     return engine_paths
 
-def detect_protocol(engine):
+def detect_protocol(command):
     """Attempt to detect the protocol used by an engine."""
+    try:
+        engine = chess.engine.SimpleEngine.popen_uci(command)
+        engine.quit()
+        protocol = chess.engine.UciProtocol 
+    except asyncio.exceptions.TimeoutError:
+        try:
+            engine = chess.engine.SimpleEngine.popen_xboard(command)
+            engine.quit()
+            protocol = chess.engine.XBoardProtocol
+        except:
+            protocol = None
+    return protocol
+    
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='checkmate', description=
@@ -105,8 +119,8 @@ if __name__ == "__main__":
 
     runtime = MAX_TIME*MAX_PLIES*args.numiter*len(paths)/60
     print(f'Estimated worst-case run time = {runtime:.1f} minutes')
-    diskspace = MAX_PLIES*len(paths)*args.numiter*BYTES_PER_LINE/(1024*1024)
-    print(f'Estimated worst-case disk space = {diskspace:.2f} MB')
+    #diskspace = MAX_PLIES*len(paths)*args.numiter*BYTES_PER_LINE/(1024*1024)
+    #print(f'Estimated worst-case disk space = {diskspace:.2f} MB')
 
     if args.askuser:
         answer = input('Continue? (Y/n) ').lower()
@@ -115,7 +129,15 @@ if __name__ == "__main__":
 
     for engine_path in paths:
         print(f'Testing executable: {engine_path}')
-        engine = chess.engine.SimpleEngine.popen_uci(engine_path)
+        protocol = detect_protocol(engine_path)
+        if protocol == chess.engine.UciProtocol:
+            engine = chess.engine.SimpleEngine.popen_uci(engine_path)
+        elif protocol == chess.engine.XBoardProtocol:
+            engine = chess.engine.SimpleEngine.popen_xboard(engine_path)
+        else:
+            print(f'Unknown protocol used by {engine_path} -- skipping')
+            continue
+
         try:
             engine.configure({'Threads': 1})
         except:
