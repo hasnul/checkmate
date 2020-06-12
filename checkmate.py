@@ -115,6 +115,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     paths = get_enginepaths(args.targets, args.subfolder)
     if not paths:
+        print("No engines found")
         exit()
 
     runtime = MAX_TIME*MAX_PLIES*args.numiter*len(paths)/60
