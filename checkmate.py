@@ -7,13 +7,11 @@ import chess
 import chess.engine
 import asyncio
 
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 MAX_PLIES = 160
 MAX_TIME = 0.1 #seconds
 MAX_THREADS = 4
-
-BYTES_PER_LINE = 1024 #useless, depends on speed, egtb, threads, etc.
 
 logging.basicConfig(filename='checkmate.log', level=logging.DEBUG)
 
@@ -91,6 +89,36 @@ def set_threads(engine, numthreads: int):
         else:
             logging.warn(f'Engine {engine.id["name"]} has no cores option')
 
+def getpaths_fromfile(filename):
+    """
+    Retrieve the engine path names from a file. It also checks that the path
+    exists. If any path specified in the file cannot be found, it skips that path 
+    and prints a warning message to stdout.  A line must be an absolute path
+    to an executable file, otherwise it is skipped.
+    """
+    paths = set()
+    try:
+        enginefile = open(filename, 'r')
+    except FileNotFoundError:
+        print(f'The file "{filename}" was not found.')
+    except IOError:
+        print('I/O exception')
+    else:
+        with enginefile:
+            for line in enginefile:
+                line = line.splitlines()[0]
+                if os.path.isabs(line):
+                    if os.path.exists(line):
+                        if os.access(line, os.X_OK):
+                            paths.add(line)
+                        else:
+                            print(f'{line} is not executable. Skipping')
+                    else:
+                        print(f'{line} not found. Skipping')
+                else:
+                    print(f'{line} is not an absolute path. Skipping')
+    return paths
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='checkmate', description=
             """Check engine `compliance` against python-chess.
@@ -98,8 +126,10 @@ if __name__ == "__main__":
             detect these engines, so that we can blame someone... The program does not 
             check that any executables that it finds are actually chess engines before
             spawning them. It is strongly recommended to run this program in a sandbox 
-            or virtual machine. On windows, scan all executables for bad stuff prior to
+            or virtual machine. On Windows, scan all executables for bad stuff prior to
             executing %(prog)s.""")
+    parser.add_argument('targets', nargs='*', help=
+            'engine(s) to test or base directory where they live')
     parser.add_argument('-b', dest='blacklist', action='store_true',
             help="don't run any engine listed in a file called blacklist")
     parser.add_argument('-c', dest='collate', action='store_true', 
@@ -110,8 +140,8 @@ if __name__ == "__main__":
     parser.add_argument('-d', dest='dump', action='store_true',
             help="dump the list of executatbles found to stdout and quit immediately")
     parser.add_argument('-f', dest='enginelist', metavar='enginelist',
-            help='file containing list of relative paths to engine programs; ' + 
-            'use in conjunction with base directory specified in main argument: targets')
+            help='file containing list of absolute paths to engine programs; ' + 
+            'ignores targets argument')
     parser.add_argument('-g', dest='gen_blacklist', action='store_true',
             help="generate or appends to the blacklist file, engines that refuse to die")
     parser.add_argument('-i', dest='numiter', type=int, default=1, metavar='numiter',
@@ -124,8 +154,6 @@ if __name__ == "__main__":
     parser.add_argument('-p', dest='protocol', choices=['uci', 'xboard', 'both'],
             default='both',
             help='protocol to test; default is both; xboard covers both versions')
-    parser.add_argument('targets', nargs='+', help=
-            'engine(s) to test or base directory where they live')
     parser.add_argument('-s', dest='subfolder', action='store_true', 
             help='include subfolders, one level deep, in engine search')
     parser.add_argument('-v', '--version', action='version', version=
@@ -136,7 +164,15 @@ if __name__ == "__main__":
             help="yes to continue prompt, i.e. don't ask user just run")
 
     args = parser.parse_args()
-    paths = get_enginepaths(args.targets, args.subfolder)
+    if not args.targets and not args.enginelist:
+        print("Neither targets nor enginelist file (-f) specified.")
+        exit()
+
+    if args.enginelist:
+        paths = getpaths_fromfile(args.enginelist)
+    else:
+        paths = get_enginepaths(args.targets, args.subfolder)
+
     if not paths:
         print("No engines found")
         exit()
@@ -148,8 +184,6 @@ if __name__ == "__main__":
 
     runtime = MAX_TIME*MAX_PLIES*args.numiter*len(paths)/60
     print(f'Estimated worst-case run time = {runtime:.1f} minutes')
-    #diskspace = MAX_PLIES*len(paths)*args.numiter*BYTES_PER_LINE/(1024*1024)
-    #print(f'Estimated worst-case disk space = {diskspace:.2f} MB')
     print(f'Found {len(paths)} potential chess engines:')
     for p in paths:
         print(p)
