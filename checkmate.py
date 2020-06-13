@@ -230,7 +230,11 @@ if __name__ == "__main__":
         ply_count = 0
         board = chess.Board()
         while not board.is_game_over() and ply_count < MAX_PLIES:
-            result = engine.play(board, chess.engine.Limit(time=MAX_TIME))
+            try:
+                result = engine.play(board, chess.engine.Limit(time=MAX_TIME))
+            except chess.engine.EngineTerminatedError:
+                logging.error(f'Engine {engine.id["name"]} died during play.')
+                break
             board.push(result.move)
             ply_count += 1
         engine.quit()
