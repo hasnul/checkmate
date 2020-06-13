@@ -6,6 +6,7 @@ import logging
 import chess
 import chess.engine
 import asyncio
+import sys
 
 __version__ = "0.0.6"
 
@@ -24,7 +25,7 @@ def get_exec(folder):
     try:
         basepath, subnames, filenames = next(os.walk(folder))
         candidates = [os.path.join(basepath, f) for f in filenames]
-        exes.update([f for f in candidates if os.access(f, os.X_OK)])
+        exes.update([f for f in candidates if is_executable(f)])
     except StopIteration:
         pass
     if subnames:
@@ -44,7 +45,7 @@ def get_enginepaths(targets, include_subdir):
             print(f'{target} does not exist.')
             return
         if os.path.isfile(target):
-            if os.access(target, os.X_OK):
+            if is_executable(target):
                 engine_paths.add(target)
         else:
             exefiles, subfolders = get_exec(target)
@@ -55,6 +56,23 @@ def get_enginepaths(targets, include_subdir):
                     sub_exes, _ = get_exec(subpath)
                     engine_paths.update(sub_exes)
     return engine_paths
+
+def is_executable(filepath):
+    """
+    Determine if a file at filepath is executable. If the OS is posix then
+    it will use the os.access method. For windows, it assumes that executables
+    used by engines are files that end with the extension '.exe' or '.bat'.
+    """
+    if os.name == "posix":
+        return os.access(filepath, os.X_OK)
+    elif sys.platform == "win32":
+        ext = os.path.splitext(filepath)[1].lower()
+        if ext == '.exe' or ext == '.bat':
+            return True
+        else:
+            return False
+    else:
+        sys.exit("Fatal error: I have no idea what OS this is. trigger grammar nazi")
 
 def detect_protocol(command):
     """Attempt to detect the protocol used by an engine."""
@@ -109,7 +127,7 @@ def getpaths_fromfile(filename):
                 line = line.splitlines()[0]
                 if os.path.isabs(line):
                     if os.path.exists(line):
-                        if os.access(line, os.X_OK):
+                        if is_executable(line):
                             paths.add(line)
                         else:
                             print(f'{line} is not executable. Skipping')
