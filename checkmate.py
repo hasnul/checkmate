@@ -107,6 +107,8 @@ if __name__ == "__main__":
     parser.add_argument('--cpu', metavar='maxcpu', type=int, default=0, 
             help="cpu usage (%%) maximum allowed; assumes majority cpu cycles consumed by " + 
             "itself and subprocesses spawned")
+    parser.add_argument('-d', dest='dump', action='store_true',
+            help="dump the list of executatbles found to stdout and quit immediately")
     parser.add_argument('-f', dest='enginelist', metavar='enginelist',
             help='file containing list of relative paths to engine programs; ' + 
             'use in conjunction with base directory specified in main argument: targets')
@@ -139,6 +141,11 @@ if __name__ == "__main__":
         print("No engines found")
         exit()
 
+    if args.dump:
+        for p in paths:
+            print(p)
+        exit()
+
     runtime = MAX_TIME*MAX_PLIES*args.numiter*len(paths)/60
     print(f'Estimated worst-case run time = {runtime:.1f} minutes')
     #diskspace = MAX_PLIES*len(paths)*args.numiter*BYTES_PER_LINE/(1024*1024)
@@ -148,7 +155,10 @@ if __name__ == "__main__":
         print(p)
 
     if args.askuser:
-        answer = input('Continue? (Y/n) ').lower()
+        answer = None
+        valid_responses = ['yes', 'y', 'no', 'n',  '']
+        while answer not in valid_responses:
+            answer = input('Continue? (Y/n) ').lower()
         if answer not in ['yes', 'y', '']:
             exit()
 
