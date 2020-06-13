@@ -7,10 +7,14 @@ import chess
 import chess.engine
 import asyncio
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
+
 MAX_PLIES = 160
 MAX_TIME = 0.1 #seconds
+MAX_THREADS = 4
+
 BYTES_PER_LINE = 1024 #useless, depends on speed, egtb, threads, etc.
+
 logging.basicConfig(filename='checkmate.log', level=logging.DEBUG)
 
 def get_exec(folder):
@@ -69,6 +73,23 @@ def detect_protocol(command):
             protocol = None
     return protocol
     
+def set_threads(engine, numthreads: int):
+    """
+    Configure the number of threads or 'cores' for the engine based on protocol.
+    """
+    if numthreads <= 0 or numthreads > MAX_THREADS:
+        logging.warn(f'Invalid demand for {numthreads} threads. Ignoring.')
+        return
+    if engine.protocol == chess.engine.UciProtocol:
+        if "Threads" in engine.options:
+            engine.configure({'Threads': numthreads})
+        else:
+            logging.warn(f'Engine {engine.id["name"]} has no Threads option')
+    elif engine.protocol == chess.engine.XBoardProtocol:
+        if "cores" in engine.options:
+            engine.configure({'cores': numthreads})
+        else:
+            logging.warn(f'Engine {engine.id["name"]} has no cores option')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='checkmate', description=
@@ -141,11 +162,8 @@ if __name__ == "__main__":
         else:
             print(f'Unknown protocol used by {engine_path} -- skipping')
             continue
-
-        try:
-            engine.configure({'Threads': 1})
-        except:
-            logging.debug(f'Engine {engine.id["name"]} has no Threads option')
+        
+        set_threads(engine, 1)
         ply_count = 0
         board = chess.Board()
         while not board.is_game_over() and ply_count < MAX_PLIES:
