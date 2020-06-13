@@ -195,6 +195,7 @@ if __name__ == "__main__":
         print("No engines found")
         exit()
 
+    paths = sorted(paths, key=str.casefold)
     if args.dump:
         for p in paths:
             print(p)
@@ -229,12 +230,14 @@ if __name__ == "__main__":
         set_threads(engine, 1)
         ply_count = 0
         board = chess.Board()
+        engine_name = engine.id["name"]
         while not board.is_game_over() and ply_count < MAX_PLIES:
             try:
                 result = engine.play(board, chess.engine.Limit(time=MAX_TIME))
             except chess.engine.EngineTerminatedError:
-                logging.error(f'Engine {engine.id["name"]} died during play.')
+                logging.error(f'Engine {engine_name} died during play.')
                 break
             board.push(result.move)
             ply_count += 1
-        engine.quit()
+        if engine:
+            engine.quit()
