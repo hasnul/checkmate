@@ -215,16 +215,18 @@ if __name__ == "__main__":
             exit()
 
     for engine_path in paths:
-        print(f'Testing executable: {engine_path}')
         protocol = detect_protocol(engine_path)
         if protocol == chess.engine.UciProtocol:
+            prototxt = "uci"
             engine = chess.engine.SimpleEngine.popen_uci(engine_path)
         elif protocol == chess.engine.XBoardProtocol:
             engine = chess.engine.SimpleEngine.popen_xboard(engine_path)
+            prototxt = "xboard"
         else:
             print(f'Unknown protocol used by {engine_path} -- skipping')
             continue
         
+        print(f'Testing {prototxt} engine at: {engine_path}')
         set_threads(engine, 1)
         ply_count = 0
         board = chess.Board()
