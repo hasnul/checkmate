@@ -80,7 +80,7 @@ def detect_protocol(command):
         engine = chess.engine.SimpleEngine.popen_uci(command)
         engine.quit()
         protocol = chess.engine.UciProtocol 
-    except asyncio.exceptions.TimeoutError:
+    except (asyncio.exceptions.TimeoutError, chess.engine.EngineTerminatedError):
         try:
             engine = chess.engine.SimpleEngine.popen_xboard(command)
             engine.quit()
