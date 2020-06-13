@@ -7,6 +7,7 @@ import chess
 import chess.engine
 import asyncio
 import sys
+import prober
 
 __version__ = "0.0.6"
 
@@ -76,18 +77,8 @@ def is_executable(filepath):
 
 def detect_protocol(command):
     """Attempt to detect the protocol used by an engine."""
-    try:
-        engine = chess.engine.SimpleEngine.popen_uci(command)
-        engine.quit()
-        protocol = chess.engine.UciProtocol 
-    except (asyncio.exceptions.TimeoutError, chess.engine.EngineTerminatedError):
-        try:
-            engine = chess.engine.SimpleEngine.popen_xboard(command)
-            engine.quit()
-            protocol = chess.engine.XBoardProtocol
-        except:
-            protocol = None
-    return protocol
+    detector = prober.popen_probe(command)
+    return asyncio.run(detector) 
     
 def set_threads(engine, numthreads: int):
     """
