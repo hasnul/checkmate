@@ -1,4 +1,5 @@
 import asyncio
+import time
 import chess
 from chess.engine import UciProtocol, XBoardProtocol
 from chess.engine import EngineProtocol, BaseCommand, ConfigMapping, INFO_NONE, Limit
@@ -6,7 +7,10 @@ from chess.engine import Info, PlayResult, INFO_ALL
 
 from typing import Any, Awaitable, Callable, Coroutine, Deque, Dict, Generator, Generic, Iterable, Iterator, List, Mapping, MutableMapping, NamedTuple, Optional, Text, Tuple, Type, TypeVar, Union
 
-MAX_TIMEOUT = 2.0
+PROBE_TIMEOUT = 2.0
+
+class ProbeException(Exception):
+    pass
 
 class ProbingProtocol(EngineProtocol):
     """
@@ -26,24 +30,25 @@ class ProbingProtocol(EngineProtocol):
 
             def start(self, engine: ProbingProtocol) -> None:
                 engine.send_line("uci")
-                engine.send_line("xboard")
+                engine.send_line("xboard\n")
                 engine.send_line("protover 2")
-                self.timeout_handle = engine.loop.call_later(MAX_TIMEOUT, lambda: self.timeout(engine))
+                self.timeout_handle = engine.loop.call_later(PROBE_TIMEOUT, lambda: self.timeout(engine))
 
             def timeout(self, engine: ProbingProtocol) -> None:
-                print("%s: Timeout during probing", engine)
+                print(f"Timeout during probing: {engine}")
                 self.result.set_result(None)
                 self.set_finished()
                 ProbingProtocol.protocol = None
 
             def line_received(self, engine: ProbingProtocol, line: str) -> None:
+                print(f'Line received: {line}')
                 if not self.result.done():
                     if line == "uciok":
                         self.timeout_handle.cancel()
                         self.result.set_result(None)
                         self.set_finished()
                         ProbingProtocol.protocol = UciProtocol
-                    elif line.startswith("feature done"):
+                    elif ("feature " in line) and ("done" in line):
                         self.timeout_handle.cancel()
                         self.result.set_result(None)
                         self.set_finished()
@@ -89,7 +94,7 @@ async def popen_probe(command: Union[str, List[str]], *, setpgrp: bool = False, 
     try:
         await protocol.probe()
         await protocol.quit()
-    except:
+    except ProbeException:
         raise "Exception occurred during popen_probe, probing for protocol."
     finally:
         transport.close()

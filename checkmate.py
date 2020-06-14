@@ -8,6 +8,7 @@ import chess.engine
 import asyncio
 import sys
 import prober
+from prober import ProbeException
 
 __version__ = "0.0.6"
 
@@ -207,15 +208,27 @@ if __name__ == "__main__":
             exit()
 
     for engine_path in paths:
-        protocol = detect_protocol(engine_path)
-        if protocol == chess.engine.UciProtocol:
-            print(f'Testing uci engine at: {engine_path}')
-            engine = chess.engine.SimpleEngine.popen_uci(engine_path)
-        elif protocol == chess.engine.XBoardProtocol:
-            print(f'Testing xboard engine at: {engine_path}')
-            engine = chess.engine.SimpleEngine.popen_xboard(engine_path)
+        
+        if args.protocol == 'both':
+            protocol = detect_protocol(engine_path)
+        elif args.protocol == 'xboard':
+            protocol = chess.engine.XBoardProtocol
+        elif args.protocol == 'uci':
+            protocol = chess.engine.UciProtocol
         else:
-            print(f'Unknown protocol used by {engine_path} -- skipping')
+            protocol = None
+
+        try:
+            print(f'Testing {args.protocol} engine at: {engine_path}')
+            if protocol == chess.engine.UciProtocol:
+                engine = chess.engine.SimpleEngine.popen_uci(engine_path)
+            elif protocol == chess.engine.XBoardProtocol:
+                engine = chess.engine.SimpleEngine.popen_xboard(engine_path)
+            else:
+                print(f'No protocol "{args.protocol}" for {engine_path} -- skipping')
+                continue
+        except ProbeException:
+            raise f'Exception occurred attempting to start {engine_path}'
             continue
         
         set_threads(engine, 1)

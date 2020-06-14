@@ -1579,6 +1579,7 @@ class XBoardProtocol(EngineProtocol):
                 self.end(engine)
 
             def line_received(self, engine: XBoardProtocol, line: str) -> None:
+                print(f'line = {line}')
                 if line.startswith("#"):
                     pass
                 elif line.startswith("feature "):
@@ -1588,6 +1589,7 @@ class XBoardProtocol(EngineProtocol):
 
             def _feature(self, engine: XBoardProtocol, arg: str) -> None:
                 for feature in shlex.split(arg):
+                    print(f'feature = {feature}')
                     key, value = feature.split("=", 1)
                     if key == "option":
                         option = _parse_xboard_option(value)
