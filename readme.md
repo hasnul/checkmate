@@ -14,11 +14,11 @@ executing.
 Todo
 ----
 
-- Detect protocol
+~~Detect protocol~~
 - Get engine id
 - Detect "standard" options
 - Identify any extra options
-- Adjudicate threefold repetition
+~~Adjudicate threefold repetition~~
 - Record if engine erred
 
 UCI Engine Behaviour
