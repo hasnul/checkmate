@@ -1,0 +1,10 @@
+October  2010 : Added millisecond time control
+October  2010 : Windows binary compiled against cygwin-1.7.5-1
+October  2010 : Sync-ed with Scid vs. PC's phalanx (adding "st" command, and fixing illegal castling)
+October  2010 : Sourceforge Phalanx project now owned by stevenaaus
+December 2006 : added setboard option - Pascal Georges
+
+Phalanx is a chess playing program
+Copyright (c) 2010 Steven Atkinson under the GNU General Public License version 2
+Copyright (c) 2006 Pascal Georges
+Copyright (c) 1997, 1998, 1999, 2000 Dusan Dobes
