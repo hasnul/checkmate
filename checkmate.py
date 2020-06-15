@@ -10,7 +10,7 @@ import sys
 import prober
 from prober import ProbeException
 
-__version__ = "0.0.6"
+__version__ = "0.0.7"
 
 MAX_PLIES = 160
 MAX_TIME = 0.1 #seconds
@@ -129,6 +129,49 @@ def getpaths_fromfile(filename):
                     print(f'{line} is not an absolute path. Skipping')
     return paths
 
+def start_engine(protocol: str, path):
+    """ 
+    Start an engine at the given path using a protocol string.
+    """
+    if protocol == 'both':
+        protocol = detect_protocol(engine_path)
+        if protocol is None:
+            return
+    elif protocol == 'xboard':
+        protocol = chess.engine.XBoardProtocol
+    elif protocol == 'uci':
+        protocol = chess.engine.UciProtocol
+    else:
+        print(f'No protocol "{protocol}" for {path} -- skipping')
+        return
+
+    if protocol == chess.engine.UciProtocol:
+        engine = chess.engine.SimpleEngine.popen_uci(path)
+    elif protocol == chess.engine.XBoardProtocol:
+        engine = chess.engine.SimpleEngine.popen_xboard(path)
+
+    return engine
+       
+def run_test(engine):
+    """
+    Run a single iteration of the engine playing against itself at a fixed
+    time limit of 0.1s per ply until game ends.
+
+    Returns: True if test successful, False if an exception occurred
+    """
+    ply_count = 0
+    board = chess.Board()
+    engine_name = engine.id["name"]
+    while not board.is_game_over() and ply_count < MAX_PLIES:
+        try:
+            result = engine.play(board, chess.engine.Limit(time=MAX_TIME))
+            board.push(result.move)
+            ply_count += 1
+        except chess.engine.EngineTerminatedError:
+            logging.error(f'Engine {engine_name} died during play.')
+            return False
+    return True
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='checkmate', description=
             """Check engine `compliance` against python-chess.
@@ -209,39 +252,18 @@ if __name__ == "__main__":
 
     for engine_path in paths:
         
-        if args.protocol == 'both':
-            protocol = detect_protocol(engine_path)
-        elif args.protocol == 'xboard':
-            protocol = chess.engine.XBoardProtocol
-        elif args.protocol == 'uci':
-            protocol = chess.engine.UciProtocol
-        else:
-            protocol = None
-
+        print(f'Testing {args.protocol} engine at: {engine_path}')
         try:
-            print(f'Testing {args.protocol} engine at: {engine_path}')
-            if protocol == chess.engine.UciProtocol:
-                engine = chess.engine.SimpleEngine.popen_uci(engine_path)
-            elif protocol == chess.engine.XBoardProtocol:
-                engine = chess.engine.SimpleEngine.popen_xboard(engine_path)
-            else:
-                print(f'No protocol "{args.protocol}" for {engine_path} -- skipping')
-                continue
+            engine = start_engine(args.protocol, engine_path)
         except ProbeException:
-            raise f'Exception occurred attempting to start {engine_path}'
+            print(f'Exception occurred attempting to start {engine_path}')
             continue
-        
+
         set_threads(engine, 1)
-        ply_count = 0
-        board = chess.Board()
         engine_name = engine.id["name"]
-        while not board.is_game_over() and ply_count < MAX_PLIES:
-            try:
-                result = engine.play(board, chess.engine.Limit(time=MAX_TIME))
-            except chess.engine.EngineTerminatedError:
-                logging.error(f'Engine {engine_name} died during play.')
+        for n in range(args.numiter):
+            if not run_test(engine):
+                print(f'Engine {engine_name} died on iteration {n + 1}.')
                 break
-            board.push(result.move)
-            ply_count += 1
         if engine:
             engine.quit()
