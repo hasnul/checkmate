@@ -145,17 +145,21 @@ def start_engine(protocol: str, path):
         print(f'No protocol "{protocol}" for {path} -- skipping')
         return
 
-    if protocol == chess.engine.UciProtocol:
-        engine = chess.engine.SimpleEngine.popen_uci(path)
-    elif protocol == chess.engine.XBoardProtocol:
-        engine = chess.engine.SimpleEngine.popen_xboard(path)
+    engine = None
+    try:
+        if protocol == chess.engine.UciProtocol:
+            engine = chess.engine.SimpleEngine.popen_uci(path)
+        elif protocol == chess.engine.XBoardProtocol:
+            engine = chess.engine.SimpleEngine.popen_xboard(path)
+    except ProbeException:
+        print(f'Exception occurred attempting to start {engine_path}')
 
     return engine
        
 def run_test(engine):
     """
     Run a single iteration of the engine playing against itself at a fixed
-    time limit of 0.1s per ply until game ends.
+    time limit of MAX_TIME per ply until game ends.
 
     Returns: True if test successful, False if an exception occurred
     """
@@ -253,10 +257,8 @@ if __name__ == "__main__":
     for engine_path in paths:
         
         print(f'Testing {args.protocol} engine at: {engine_path}')
-        try:
-            engine = start_engine(args.protocol, engine_path)
-        except ProbeException:
-            print(f'Exception occurred attempting to start {engine_path}')
+        engine = start_engine(args.protocol, engine_path)
+        if engine is None:
             continue
 
         set_threads(engine, 1)
