@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import argparse 
+import argparse
 import os
 import logging
 import chess
@@ -13,17 +13,15 @@ from prober import ProbeException
 __version__ = "0.0.7"
 
 MAX_PLIES = 160
-MAX_TIME = 0.1 #seconds
+MAX_TIME = 0.1  # seconds
 MAX_THREADS = 4
 
 logging.basicConfig(filename='checkmate.log', level=logging.DEBUG)
 
+
 def get_exec(folder):
-    """
-    Return a set of all the executables in the folder and a list of the names of all  
-    subfolders.
-    """
-    exes = set() 
+    """Return a set of all the executables and subdirectories in a folder."""
+    exes = set()
     try:
         basepath, subnames, filenames = next(os.walk(folder))
         candidates = [os.path.join(basepath, f) for f in filenames]
@@ -31,14 +29,14 @@ def get_exec(folder):
     except StopIteration:
         pass
     if subnames:
-        return exes, subnames 
+        return exes, subnames
     else:
         return exes, None
 
+
 def get_enginepaths(targets, include_subdir):
     """Return a set of full engine paths that will be used to spawn engines."""
-
-    engine_paths = set() 
+    engine_paths = set()
     for target in targets:
         target = os.path.expanduser(target)
         target = os.path.expandvars(target)
@@ -59,11 +57,14 @@ def get_enginepaths(targets, include_subdir):
                     engine_paths.update(sub_exes)
     return engine_paths
 
+
 def is_executable(filepath):
     """
-    Determine if a file at filepath is executable. If the OS is posix then
-    it will use the os.access method. For windows, it assumes that executables
-    used by engines are files that end with the extension '.exe' or '.bat'.
+    Determine if a file at filepath is executable.
+
+    If the OS is posix then it will use the os.access method. For windows, it assumes
+    that executables used by engines are files that end with the extension '.exe' or
+    '.bat'.
     """
     if os.name == "posix":
         return os.access(filepath, os.X_OK)
@@ -74,17 +75,17 @@ def is_executable(filepath):
         else:
             return False
     else:
-        sys.exit("Fatal error: I have no idea what OS this is. trigger grammar nazi")
+        sys.exit("Fatal error: I have no idea what OS this is.")
+
 
 def detect_protocol(command):
     """Attempt to detect the protocol used by an engine."""
     detector = prober.popen_probe(command)
-    return asyncio.run(detector) 
-    
+    return asyncio.run(detector)
+
+
 def set_threads(engine, numthreads: int):
-    """
-    Configure the number of threads or 'cores' for the engine based on protocol.
-    """
+    """Configure the number of threads or 'cores' for the engine based on protocol."""
     if numthreads <= 0 or numthreads > MAX_THREADS:
         logging.warn(f'Invalid demand for {numthreads} threads. Ignoring.')
         return
@@ -99,12 +100,14 @@ def set_threads(engine, numthreads: int):
         else:
             logging.warn(f'Engine {engine.id["name"]} has no cores option')
 
+
 def getpaths_fromfile(filename):
     """
-    Retrieve the engine path names from a file. It also checks that the path
-    exists. If any path specified in the file cannot be found, it skips that path 
-    and prints a warning message to stdout.  A line must be an absolute path
-    to an executable file, otherwise it is skipped.
+    Retrieve the engine path names from a file.
+
+    It also checks that the path exists. If any path specified in the file cannot be
+    found, it skips that path and prints a warning message to stdout.  A line must be
+    an absolute path to an executable file, otherwise it is skipped.
     """
     paths = set()
     try:
@@ -129,17 +132,16 @@ def getpaths_fromfile(filename):
                     print(f'{line} is not an absolute path. Skipping')
     return paths
 
-def start_engine(protocol: str, path):
-    """ 
-    Start an engine at the given path using a protocol string.
-    """
-    if protocol == 'both':
+
+def start_engine(protocol_str: str, path):
+    """Start an engine at the given path using a protocol string."""
+    if protocol_str == 'both':
         protocol = detect_protocol(engine_path)
         if protocol is None:
             return
-    elif protocol == 'xboard':
+    elif protocol_str == 'xboard':
         protocol = chess.engine.XBoardProtocol
-    elif protocol == 'uci':
+    elif protocol_str == 'uci':
         protocol = chess.engine.UciProtocol
     else:
         print(f'No protocol "{protocol}" for {path} -- skipping')
@@ -155,12 +157,13 @@ def start_engine(protocol: str, path):
         print(f'Exception occurred attempting to start {engine_path}')
 
     return engine
-       
+
+
 def run_test(engine):
     """
-    Run a single iteration of the engine playing against itself at a fixed
-    time limit of MAX_TIME per ply until game ends.
+    Run a single iteration of the engine playing against itself.
 
+    A fixed time limit of MAX_TIME per ply until game ends is used.
     Returns: True if test successful, False if an exception occurred
     """
     ply_count = 0
@@ -176,49 +179,51 @@ def run_test(engine):
             return False
     return True
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(prog='checkmate', description=
-            """Check engine `compliance` against python-chess.
-            Some engines don't play nicely with python-chess. %(prog)s attempts to 
-            detect these engines, so that we can blame someone... The program does not 
+    parser = argparse.ArgumentParser(prog='checkmate', description="""
+            Check engine `compliance` against python-chess.
+            Some engines don't play nicely with python-chess. %(prog)s attempts to
+            detect these engines, so that we can blame someone... The program does not
             check that any executables that it finds are actually chess engines before
-            spawning them. It is strongly recommended to run this program in a sandbox 
+            spawning them. It is strongly recommended to run this program in a sandbox
             or virtual machine. On Windows, scan all executables for bad stuff prior to
             executing %(prog)s.""")
-    parser.add_argument('targets', nargs='*', help=
-            'engine(s) to test or base directory where they live')
-    parser.add_argument('-b', dest='blacklist', action='store_true',
-            help="don't run any engine listed in a file called blacklist")
-    parser.add_argument('-c', dest='collate', action='store_true', 
-            help='collate engine logs into a single log file; clobber old log')
-    parser.add_argument('--cpu', metavar='maxcpu', type=int, default=0, 
-            help="cpu usage (%%) maximum allowed; assumes majority cpu cycles consumed by " + 
-            "itself and subprocesses spawned")
-    parser.add_argument('-d', dest='dump', action='store_true',
-            help="dump the list of executatbles found to stdout and quit immediately")
-    parser.add_argument('-f', dest='enginelist', metavar='enginelist',
-            help='file containing list of absolute paths to engine programs; ' + 
-            'ignores targets argument')
-    parser.add_argument('-g', dest='gen_blacklist', action='store_true',
-            help="generate or appends to the blacklist file, engines that refuse to die")
+    parser.add_argument('targets', nargs='*', help="""
+            engine(s) to test or base directory where they live""")
+    parser.add_argument('-b', dest='blacklist', action='store_true', help="""
+            don't run any engine listed in a file called blacklist""")
+    parser.add_argument('-c', dest='collate', action='store_true', help="""
+            collate engine logs into a single log file; clobber old log""")
+    parser.add_argument('--cpu', metavar='maxcpu', type=int, default=0, help="""
+            cpu usage (%%) maximum allowed; assumes majority cpu cycles consumed by
+            "itself and subprocesses spawned""")
+    parser.add_argument('-d', dest='dump', action='store_true', help="""
+            dump the list of executatbles found to stdout and quit immediately""")
+    parser.add_argument('-f', dest='enginelist', metavar='enginelist', help="""
+            file containing list of absolute paths to engine programs;
+            ignores targets argument""")
+    parser.add_argument('-g', dest='gen_blacklist', action='store_true', help="""
+            generate or appends to the blacklist file, engines that refuse to die""")
     parser.add_argument('-i', dest='numiter', type=int, default=1, metavar='numiter',
-            help='how many iterations to run for each engine; default is one')
-    parser.add_argument('--lib', metavar='libfolder', 
-            help="folder containing the python-chess library")
-    parser.add_argument('--mem', metavar='maxmem', help="memory usage (GB) maximum allowed" +
-            "; assumes no other programs running in parallel will consume memory",
-            type=int, default=0)
+                        help="""how many iterations to run for each engine; default
+                        is one""")
+    parser.add_argument('--lib', metavar='libfolder', help="""
+            folder containing the python-chess library""")
+    parser.add_argument('--mem', metavar='maxmem', help="""
+            memory usage (GB) maximum allowed; assumes no other programs running in
+            parallel will consume memory""", type=int, default=0)
     parser.add_argument('-p', dest='protocol', choices=['uci', 'xboard', 'both'],
-            default='both',
-            help='protocol to test; default is both; xboard covers both versions')
-    parser.add_argument('-s', dest='subfolder', action='store_true', 
-            help='include subfolders, one level deep, in engine search')
-    parser.add_argument('-v', '--version', action='version', version=
-            f'%(prog)s {__version__}')
-    parser.add_argument('-x', metavar="exclude_file", help=
-            "exclude the programs and subfolders listed in an exclude file.")
-    parser.add_argument('-y', dest='askuser', action='store_false', 
-            help="yes to continue prompt, i.e. don't ask user just run")
+                        default='both', help="""
+            protocol to test; default is both; xboard covers both versions""")
+    parser.add_argument('-s', dest='subfolder', action='store_true', help="""
+            include subfolders, one level deep, in engine search""")
+    parser.add_argument('-v', '--version', action='version',
+                        version=f'%(prog)s {__version__}')
+    parser.add_argument('-x', metavar="exclude_file", help="""
+            exclude the programs and subfolders listed in an exclude file.""")
+    parser.add_argument('-y', dest='askuser', action='store_false', help="""
+            yes to continue prompt, i.e. don't ask user just run""")
 
     args = parser.parse_args()
     if not args.targets and not args.enginelist:
@@ -255,7 +260,6 @@ if __name__ == "__main__":
             exit()
 
     for engine_path in paths:
-        
         print(f'Testing {args.protocol} engine at: {engine_path}')
         engine = start_engine(args.protocol, engine_path)
         if engine is None:
