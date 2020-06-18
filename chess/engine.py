@@ -1611,10 +1611,10 @@ class XBoardProtocol(EngineProtocol):
                     self.result.set_exception(EngineError("xboard engine did not declare required feature: ping"))
                     self.set_finished()
                     return
-                if not engine.features.get("setboard", 0):
-                    self.result.set_exception(EngineError("xboard engine did not declare required feature: setboard"))
-                    self.set_finished()
-                    return
+                # if not engine.features.get("setboard", 0):
+                #    self.result.set_exception(EngineError("xboard engine did not declare required feature: setboard"))
+                #    self.set_finished()
+                #    return
 
                 if not engine.features.get("reuse", 1):
                     LOGGER.warning("%s: Rejecting feature reuse=0", engine)
@@ -1695,7 +1695,10 @@ class XBoardProtocol(EngineProtocol):
         if new_game:
             fen = root.fen(shredder=board.chess960, en_passant="fen")
             if variant != "normal" or fen != chess.STARTING_FEN or board.chess960:
-                self.send_line(f"setboard {fen}")
+                if self.features['setboard']:
+                    self.send_line(f"setboard {fen}")
+                else:
+                    LOGGER.warning("Setboard feature not available")
 
         # Undo moves until common position.
         common_stack_len = 0
@@ -1878,6 +1881,9 @@ class XBoardProtocol(EngineProtocol):
 
         if limit is not None and (limit.white_clock is not None or limit.black_clock is not None):
             raise EngineError("xboard analysis does not support clock limits")
+
+        if not self.features['setboard']:
+            raise EngineError("Analysis not supported for this engine's protocol, setboard=0")
 
         class XBoardAnalysisCommand(BaseCommand[XBoardProtocol, AnalysisResult]):
             def start(self, engine: XBoardProtocol) -> None:
