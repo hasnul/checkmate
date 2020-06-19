@@ -1,6 +1,12 @@
 Checkmate
 =========
 
+Status
+------
+Attempt at cheap hack in this branch is not working.
+
+Intro
+-----
 Check the behaviour of a collection of chess engines against the expectations of
 the python-chess library.
 
@@ -11,26 +17,13 @@ spawning them. It is strongly recommended to run this program in a sandbox
 or virtual machine. On windows, scan all executables for bad stuff prior to
 executing.
 
-Todo
-----
-
-~~Detect protocol~~
-- Get engine id
-- Detect "standard" options
-- Identify any extra options
-~~Adjudicate threefold repetition~~
-- Record if engine erred
-
-UCI Engine Behaviour
---------------------
-Typically a uci engine offers
-- Threads
-- Hash
-- Tablebases
-
-XBoard Engine Behaviour
+XBoard v1 Engine Notes
 -----------------------
-An XBoard engine should
-- respond correctly to "rejected usermove"
+Faile 
+* does not work appear to work correctly in fixed time mode, i.e. 'st'. Tested in xboard
+  gui.
+* engine match with sf11 works fine. Tested using cutechess-cli at 40/1:0.
 
-
+Phalanx
+* works at st=1 in xboard gui
+* engine match using cutechess-cli working at 40/1:0

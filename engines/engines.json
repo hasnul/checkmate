@@ -1,0 +1,12 @@
+[
+ {
+   "name": "Faile_1.4",
+   "command": "faile_1.4.4",
+   "protocol": "xboard"
+ },
+ {
+   "name": "Stockfish_11",
+   "command": "sf11",
+   "protocol": "uci"
+ }
+]

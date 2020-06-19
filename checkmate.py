@@ -5,12 +5,13 @@ import os
 import logging
 import chess
 import chess.engine
+import cecp
 import asyncio
 import sys
 import prober
 from prober import ProbeException
 
-__version__ = "0.0.7"
+__version__ = "0.0.8"
 
 MAX_PLIES = 160
 MAX_TIME = 0.1  # seconds
@@ -143,6 +144,8 @@ def start_engine(protocol_str: str, path):
         protocol = chess.engine.XBoardProtocol
     elif protocol_str == 'uci':
         protocol = chess.engine.UciProtocol
+    elif protocol_str == 'cecpv1':
+        protocol = cecp.CECPv1Protocol
     else:
         print(f'No protocol "{protocol}" for {path} -- skipping')
         return
@@ -153,6 +156,8 @@ def start_engine(protocol_str: str, path):
             engine = chess.engine.SimpleEngine.popen_uci(path)
         elif protocol == chess.engine.XBoardProtocol:
             engine = chess.engine.SimpleEngine.popen_xboard(path)
+        elif protocol == cecp.CECPv1Protocol:
+            engine = cecp.CECPv1Engine.popen_cecpv1(path)
     except ProbeException:
         print(f'Exception occurred attempting to start {engine_path}')
 
@@ -213,8 +218,8 @@ if __name__ == "__main__":
     # parser.add_argument('--mem', metavar='maxmem', help="""
     #        memory usage (GB) maximum allowed; assumes no other programs running in
     #        parallel will consume memory""", type=int, default=0)
-    parser.add_argument('-p', dest='protocol', choices=['uci', 'xboard', 'both'],
-                        default='both', help="""
+    parser.add_argument('-p', dest='protocol', choices=['uci', 'xboard', 'cecpv1', 
+                        'both'], default='both', help="""
             protocol to test; default is both; xboard covers both versions""")
     parser.add_argument('-s', dest='subfolder', action='store_true', help="""
             include subfolders, one level deep, in engine search""")
