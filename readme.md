@@ -26,4 +26,4 @@ Faile
 
 Phalanx
 * works at st=1 in xboard gui
-* engine match using cutechess-cli working at 40/1:0
+* engine match using cutechess-cli failed with illegal move o-o; castling notation 

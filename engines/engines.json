@@ -8,5 +8,10 @@
    "name": "Stockfish_11",
    "command": "sf11",
    "protocol": "uci"
+ },
+ {
+   "name": "Phalanx_23",
+   "command": "phalanx23",
+   "protocol": "xboard"
  }
 ]
