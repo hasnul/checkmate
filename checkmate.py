@@ -191,28 +191,28 @@ if __name__ == "__main__":
             executing %(prog)s.""")
     parser.add_argument('targets', nargs='*', help="""
             engine(s) to test or base directory where they live""")
-    parser.add_argument('-b', dest='blacklist', action='store_true', help="""
-            don't run any engine listed in a file called blacklist""")
-    parser.add_argument('-c', dest='collate', action='store_true', help="""
-            collate engine logs into a single log file; clobber old log""")
-    parser.add_argument('--cpu', metavar='maxcpu', type=int, default=0, help="""
-            cpu usage (%%) maximum allowed; assumes majority cpu cycles consumed by
-            "itself and subprocesses spawned""")
+    # parser.add_argument('-b', dest='blacklist', action='store_true', help="""
+    #        don't run any engine listed in a file called blacklist""")
+    # parser.add_argument('-c', dest='collate', action='store_true', help="""
+    #        collate engine logs into a single log file; clobber old log""")
+    # parser.add_argument('--cpu', metavar='maxcpu', type=int, default=0, help="""
+    #        cpu usage (%%) maximum allowed; assumes majority cpu cycles consumed by
+    #        "itself and subprocesses spawned""")
     parser.add_argument('-d', dest='dump', action='store_true', help="""
             dump the list of executatbles found to stdout and quit immediately""")
     parser.add_argument('-f', dest='enginelist', metavar='enginelist', help="""
             file containing list of absolute paths to engine programs;
             ignores targets argument""")
-    parser.add_argument('-g', dest='gen_blacklist', action='store_true', help="""
-            generate or appends to the blacklist file, engines that refuse to die""")
+    # parser.add_argument('-g', dest='gen_blacklist', action='store_true', help="""
+    #        generate or appends to the blacklist file, engines that refuse to die""")
     parser.add_argument('-i', dest='numiter', type=int, default=1, metavar='numiter',
                         help="""how many iterations to run for each engine; default
                         is one""")
-    parser.add_argument('--lib', metavar='libfolder', help="""
-            folder containing the python-chess library""")
-    parser.add_argument('--mem', metavar='maxmem', help="""
-            memory usage (GB) maximum allowed; assumes no other programs running in
-            parallel will consume memory""", type=int, default=0)
+    # parser.add_argument('--lib', metavar='libfolder', help="""
+    #        folder containing the python-chess library""")
+    # parser.add_argument('--mem', metavar='maxmem', help="""
+    #        memory usage (GB) maximum allowed; assumes no other programs running in
+    #        parallel will consume memory""", type=int, default=0)
     parser.add_argument('-p', dest='protocol', choices=['uci', 'xboard', 'both'],
                         default='both', help="""
             protocol to test; default is both; xboard covers both versions""")
@@ -220,8 +220,8 @@ if __name__ == "__main__":
             include subfolders, one level deep, in engine search""")
     parser.add_argument('-v', '--version', action='version',
                         version=f'%(prog)s {__version__}')
-    parser.add_argument('-x', metavar="exclude_file", help="""
-            exclude the programs and subfolders listed in an exclude file.""")
+    # parser.add_argument('-x', metavar="exclude_file", help="""
+    #        exclude the programs and subfolders listed in an exclude file.""")
     parser.add_argument('-y', dest='askuser', action='store_false', help="""
             yes to continue prompt, i.e. don't ask user just run""")
 
