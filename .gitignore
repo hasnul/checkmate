@@ -2,3 +2,5 @@
 game.*
 log.*
 testfile
+learn.phalanx
+*.pgn
