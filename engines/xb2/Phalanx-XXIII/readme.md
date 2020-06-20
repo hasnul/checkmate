@@ -33,15 +33,17 @@ This document contains some explanations on phalanx settings found on
 > 
 > [Edit on Nov 9, 2014 - I've found that these settings for Easy 0.9 through Easy 0.1 are very nonlinear; I'm working on finding settings that are more linear, but it will take some time.]
 > 
-> Phalanx XXIII Easy 0.9 (about 1683 elo) :         -s+ -b- -l- -p- -n1000 -z 9 -t 256
-> Phalanx XXIII Easy 0.8 (about 1766 elo) :         -s+ -b- -l- -p- -n2000 -z 8 -t 512
-> Phalanx XXIII Easy 0.7 (about 1849 elo) :         -s+ -b- -l- -p- -n4000 -z 7 -t 1024
-> Phalanx XXIII Easy 0.6 (about 1932 elo) :         -s+ -b- -l- -p- -n8000 -z 6 -t 2048
-> Phalanx XXIII Easy 0.5 (about 2015 elo) :         -s+ -b- -l- -p- -n16000 -z 5 -t 4096
-> Phalanx XXIII Easy 0.4 (about 2098 elo) :         -s+ -b- -l- -p- -n32000 -z 4 -t 8192
-> Phalanx XXIII Easy 0.3 (about 2181 elo) :         -s+ -b- -l- -p- -n64000 -z 3 -t 16384
-> Phalanx XXIII Easy 0.2 (about 2264 elo) :         -s+ -b- -l- -p- -n128000 -z 2 -t 32768
-> Phalanx XXIII Easy 0.1 (about 2347 elo) :         -s+ -b- -l- -p- -n256000 -z 1 -t 65536
+```
+Phalanx XXIII Easy 0.9 (about 1683 elo) :         -s+ -b- -l- -p- -n1000 -z 9 -t 256
+Phalanx XXIII Easy 0.8 (about 1766 elo) :         -s+ -b- -l- -p- -n2000 -z 8 -t 512
+Phalanx XXIII Easy 0.7 (about 1849 elo) :         -s+ -b- -l- -p- -n4000 -z 7 -t 1024
+Phalanx XXIII Easy 0.6 (about 1932 elo) :         -s+ -b- -l- -p- -n8000 -z 6 -t 2048
+Phalanx XXIII Easy 0.5 (about 2015 elo) :         -s+ -b- -l- -p- -n16000 -z 5 -t 4096
+Phalanx XXIII Easy 0.4 (about 2098 elo) :         -s+ -b- -l- -p- -n32000 -z 4 -t 8192
+Phalanx XXIII Easy 0.3 (about 2181 elo) :         -s+ -b- -l- -p- -n64000 -z 3 -t 16384
+Phalanx XXIII Easy 0.2 (about 2264 elo) :         -s+ -b- -l- -p- -n128000 -z 2 -t 32768
+Phalanx XXIII Easy 0.1 (about 2347 elo) :         -s+ -b- -l- -p- -n256000 -z 1 -t 65536
+```
 > 
 > [Edit on Nov 9, 2014 - I've found that these settings for Easy 0.9 through Easy 0.1 are very nonlinear; I'm working on finding settings that are more linear, but it will take some time.]
 > 
