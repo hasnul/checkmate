@@ -1,6 +1,6 @@
 ## Additional Notes
 
-The original readme document is in the file README.
+The original readme document is in the file [README][2].
 This document contains some explanations on phalanx settings found on
 [chess.com written by EscherehcsE][1].
 
@@ -51,3 +51,4 @@ Phalanx XXIII Easy 0.1 (about 2347 elo) :         -s+ -b- -l- -p- -n256000 -z 1 
 
 [//]: # (References) 
 [1]: https://www.chess.com/forum/view/chess-equipment/phalanx-rebornand-we-really-mean-it-this-time-phalanx-xxiii
+[2]: https://github.com/hasnul/checkmate/tree/master/engines/xb2/Phalanx-XXIII/README 
